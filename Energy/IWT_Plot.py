@@ -5,11 +5,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
-from GeneralUtil.python import PlotUtilities
+from UtilGeneral import PlotUtilities
 import IWT_Util
-from Research.Perkins.AnalysisUtil.ForceExtensionAnalysis import FEC_Util
-from FitUtil.EnergyLandscapes.InverseWeierstrass.Python.Code import \
-    InverseWeierstrass
+from UtilForce.FEC import FEC_Util
+from Code import InverseWeierstrass
 
 
 def TomPlot(LandscapeObj,OutBase,UnfoldObj,RefoldObj,idx,f_one_half_N=0e-12):

@@ -5,14 +5,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-from FitUtil.EnergyLandscapes.InverseWeierstrass.Python.Code import \
-    InverseWeierstrass
-from GeneralUtil.python import CheckpointUtilities as pCheckUtil
-from GeneralUtil.python import PlotUtilities
-from FitUtil.FitUtils.Python import FitUtil as pFitUtil
-from Research.Perkins.AnalysisUtil.ForceExtensionAnalysis import \
-    FEC_Util,FEC_Plot
+from UtilGeneral import CheckpointUtilities as pCheckUtil
+from UtilGeneral import PlotUtilities
+from UtilForce.FEC import FEC_Util,FEC_Plot
 from Research.Personal.EventDetection.Util import Analysis
+from scipy import interpolate
+
 
 class BoundsObj:
     def __init__(self,bounds_folded_nm,bounds_unfolded_nm,
@@ -140,7 +138,7 @@ def split_by_max_sep(obj,fraction_smooth=0.02):
     """
     raw_sep = obj.Separation
     n_smooth = int(np.ceil(fraction_smooth*raw_sep.size))
-    sep = Analysis.spline_interpolated_by_index(raw_sep,n_smooth)
+    sep = spline_interpolated_by_index(raw_sep,n_smooth)
     unfold_stop_idx = np.argmax(sep)
     sep_start = sep[0]
     sep_unfold = sep[unfold_stop_idx]
@@ -175,3 +173,63 @@ def get_unfold_and_refold_objects_by_sep(data,f_split=None,**kwargs):
         f_split = split_by_max_sep
     return get_unfold_and_refold_objects(data,f_split=f_split,**kwargs)
         
+
+    
+def spline_interpolated_by_index(f,nSmooth,**kwargs):
+    """
+    returnsa spline interpolator of f versus 0,1,2,...,(N-1)
+    
+    Args:
+        f: function to interpolate
+        nSmooth: distance between knots (smoothing number)
+        **kwargs: passed to spline_interpolator
+    Returns: 
+        spline interpolated value of f on the indices (*not* an interpolator
+        object, just an array) 
+    """
+    x,interp = spline_interpolator_by_index(f,nSmooth,**kwargs)
+    return interp(x)
+    
+def spline_interpolator_by_index(f,n_smooth,**kwargs):
+    """
+    see spline_interpolated_by_index. except returns tuple of <x,interpolator
+    object>
+    
+    Args:
+        see spline_interpolated_by_index
+    Returns: 
+        see spline_interpolated_by_index 
+    """
+    x = np.arange(start=0,stop=f.size,step=1)
+    return x,spline_interpolator(n_smooth,x,f,**kwargs)
+
+def spline_interpolator(tau_x,x,f,knots=None,deg=2):
+    """
+    returns a spline interpolator with knots uniformly spaced at tau_x over x
+    
+    Args:
+        tau_x: the step size in whatever units of c
+        x: the unit of 'time'
+        f: the function we want the autocorrelation of
+        knots: the locations of the knots (default to uniform in x)
+        deg: the degree of the spline interpolator to use. continuous to 
+        deg-1 derivative
+    Returns:
+        scipy.interpolate.LSQUnivariateSpline object, interpolating f on x
+    """
+    # note: stop is *not* included in the iterval, so we add an extra step 
+    # to make it included
+    if (knots is None):
+        step_knots = tau_x/2
+        knots = np.arange(start=min(x),stop=max(x)+step_knots,
+                          step=step_knots)
+    # get the spline of the data
+    spline_args = \
+        dict(
+            # degree is k, (k-1)th derivative is continuous
+            k=deg,
+            # specify the spline knots (t) uniformly in time at the 
+            # autocorrelation time. dont want the endpoints
+            t=knots[1:-1]
+            )
+    return interpolate.LSQUnivariateSpline(x=x,y=f,**spline_args)

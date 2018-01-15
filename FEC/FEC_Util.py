@@ -11,8 +11,8 @@ from IgorUtil.PythonAdapter.TimeSepForceObj import TimeSepForceObj,Bunch
 from IgorUtil.PythonAdapter import PxpLoader,ProcessSingleWave
 from IgorUtil.PythonAdapter.WaveDataGroup import WaveDataGroup
 from IgorUtil.PythonAdapter import TimeSepForceObj
-from GeneralUtil.python.IgorUtil import SavitskyFilter
-from GeneralUtil.python import GenUtilities,CheckpointUtilities
+from UtilGeneral.IgorUtil import SavitskyFilter
+from UtilGeneral import GenUtilities,CheckpointUtilities
 
 default_filter_pct = 0.01
 

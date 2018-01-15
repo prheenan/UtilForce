@@ -5,8 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 from Research.Perkins.AnalysisUtil.ForceExtensionAnalysis import FEC_Util
-import GeneralUtil.python.PlotUtilities as PlotUtilities
-from GeneralUtil.python.IgorUtil import SavitskyFilter
+import UtilGeneral.PlotUtilities as PlotUtilities
+from UtilGeneral.IgorUtil import SavitskyFilter
 import copy
 
 def_conversion_opts =dict(ConvertX = lambda x: x*1e9,

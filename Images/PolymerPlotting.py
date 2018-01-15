@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-from GeneralUtil.python import PlotUtilities
+from UtilGeneral import PlotUtilities
 from Research.Perkins.AnalysisUtil.Images import PolymerTracing
 
 def plot_single_worm_object(tmp_fit):

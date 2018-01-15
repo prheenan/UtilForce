@@ -7,7 +7,7 @@ import sys
 
 from Research.Perkins.AnalysisUtil.ForceExtensionAnalysis import FEC_Util
 from IgorUtil.PythonAdapter import PxpLoader,ProcessSingleWave
-from GeneralUtil.python import GenUtilities,PlotUtilities
+from UtilGeneral import GenUtilities,PlotUtilities
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 

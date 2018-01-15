@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 import os
-import GeneralUtil.python.GenUtilities as pGenUtil
+import UtilGeneral.GenUtilities as pGenUtil
 from collections import OrderedDict
 sys.path.append("../../../../")
 import re

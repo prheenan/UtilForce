@@ -6,11 +6,11 @@ import matplotlib.pyplot as plt
 import sys,ast,os
 
 import copy
-from IgorUtil.PythonAdapter.DataObj import DataObj
-from IgorUtil.PythonAdapter.TimeSepForceObj import TimeSepForceObj,Bunch
-from IgorUtil.PythonAdapter import PxpLoader,ProcessSingleWave
-from IgorUtil.PythonAdapter.WaveDataGroup import WaveDataGroup
-from IgorUtil.PythonAdapter import TimeSepForceObj
+from UtilIgor.DataObj import DataObj
+from UtilIgor.TimeSepForceObj import TimeSepForceObj,Bunch
+from UtilIgor import PxpLoader,ProcessSingleWave
+from UtilIgor.WaveDataGroup import WaveDataGroup
+from UtilIgor import TimeSepForceObj
 from UtilGeneral.IgorUtil import SavitskyFilter
 from UtilGeneral import GenUtilities,CheckpointUtilities
 

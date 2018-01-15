@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 from UtilGeneral import CheckpointUtilities as pCheckUtil
 from UtilGeneral import PlotUtilities
 from UtilForce.FEC import FEC_Util,FEC_Plot
-from Research.Personal.EventDetection.Util import Analysis
 from scipy import interpolate
 
 

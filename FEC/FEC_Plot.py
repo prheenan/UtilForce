@@ -4,9 +4,9 @@ from __future__ import division
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-import FEC_Util
-import UtilGeneral.PlotUtilities as PlotUtilities
-from UtilGeneral.IgorUtil import SavitskyFilter
+from . import FEC_Util
+from ..UtilGeneral import PlotUtilities as PlotUtilities
+from ..UtilGeneral.IgorUtil import SavitskyFilter
 import copy
 
 def_conversion_opts =dict(ConvertX = lambda x: x*1e9,

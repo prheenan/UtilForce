@@ -15,7 +15,6 @@ def subtract_background(image,deg=2,**kwargs):
     """
     subtracts a line of <deg> from each row in <images>
     """
-    image = image.height
     to_ret = image.copy()
     shape = image.shape
     coords = np.arange(shape[1])
@@ -23,7 +22,7 @@ def subtract_background(image,deg=2,**kwargs):
     n_rows = shape[0]
     for i in range(n_rows):
         to_ret[i,:] -= np.polyval(coeffs[:,i],x=coords)
-    return to_ret.T
+    return to_ret
 
 def read_images_in_pxp_dir(dir,**kwargs):
     """

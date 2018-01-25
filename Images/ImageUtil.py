@@ -10,19 +10,30 @@ from ..UtilIgor import PxpLoader,ProcessSingleWave
 from ..UtilGeneral import GenUtilities,PlotUtilities
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
+def line_background(image,deg=3,**kw):
+    """
+    :param image: original, to correct
+    :param deg:  polynomial to subtract from each *row* of image
+    :param kw:
+    :return: array, polynomial fit to each row of image
+    """
+    to_ret = np.zeros_like(image)
+    shape = to_ret.shape
+    coords = np.arange(shape[1])
+    n_rows = shape[0]
+    for i in range(n_rows):
+        raw_row = to_ret[i,:]
+        coeffs = np.polyfit(x=coords,y=raw_row,deg=deg,**kw)
+        corr = np.polyval(coeffs,x=coords)
+        to_ret[i,:] = corr
+    return to_ret
 
-def subtract_background(image,deg=2,**kwargs):
+def subtract_background(image,deg=3,**kwargs):
     """
     subtracts a line of <deg> from each row in <images>
     """
-    to_ret = image.copy()
-    shape = image.shape
-    coords = np.arange(shape[1])
-    coeffs = np.array(np.polyfit(x=coords,y=image.T,deg=deg,**kwargs))
-    n_rows = shape[0]
-    for i in range(n_rows):
-        to_ret[i,:] -= np.polyval(coeffs[:,i],x=coords)
-    return to_ret
+    corr = line_background(image,deg=deg,**kwargs)
+    return image - corr
 
 def read_images_in_pxp_dir(dir,**kwargs):
     """

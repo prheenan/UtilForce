@@ -5,9 +5,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
-from Research.Perkins.AnalysisUtil.ForceExtensionAnalysis import FEC_Util
-from UtilIgor import PxpLoader,ProcessSingleWave
-from UtilGeneral import GenUtilities,PlotUtilities
+from ..FEC import FEC_Util
+from ..UtilIgor import PxpLoader,ProcessSingleWave
+from ..UtilGeneral import GenUtilities,PlotUtilities
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 

@@ -11,21 +11,39 @@ import sys,scipy,copy
 
 
 class WormObject(object):
-    def __init__(self,x,y,header,file_name):
+    def __init__(self,x,y,header,file_name,px_to_meters):
         """
         object for keeping track of an x,y trace
         
         Args:
-            x,y: the coordinates
+            x,y: the coordinates, in pixels
             file_name: where this trace came from
+            image: the image object, for getting dimensions
             header: the header information to store from the file
         """
-        self.x = x
-        self.y = y
+        self._x = x
+        self._y = y
+        self.px_to_meters = px_to_meters
         self.file_name = file_name
         self.header = header
-    def assert_fit(self):
-        assert self.inf is not None
+    @property
+    def x(self):
+        return self._x
+    @property
+    def y(self):
+        return self._y
+    @x.setter
+    def x(self,x):
+        self._x = x
+    @y.setter
+    def y(self,y):
+        self._y = y
+    @property
+    def x_meters(self):
+        return self.x * self.px_to_meters
+    @property
+    def y_meters(self):
+        return self.y * self.px_to_meters
 
 class TaggedImage:
     def __init__(self,image,worm_objects):

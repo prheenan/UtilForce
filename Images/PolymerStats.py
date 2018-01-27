@@ -115,7 +115,7 @@ def get_region_of_interest(height_cropped_nm, background_image,
     return image_single_region
 
 
-def _binned_stat(x, y, n_bins, **kw):
+def _binned_stat(x, y, bins, **kw):
     """
     Args:
         x,y: the x and y values to fit
@@ -124,7 +124,6 @@ def _binned_stat(x, y, n_bins, **kw):
     Returns:
         tuple of <x bins, y statistics>
     """
-    bins = np.linspace(min(x), max(x), num=n_bins)
     stat_y, x, _ = binned_statistic(x=x, values=y, bins=bins, **kw)
     # skip the right bin
     x = x[:-1]
@@ -147,14 +146,14 @@ def theta_stats(polymer_info_obj, n_bins):
     return [x] + thetas
 
 
-def get_L_and_mean_angle(cos_angle, L, n_bins, min_cos_angle=np.exp(-2)):
+def L_and_mean_angle(L,cos_angle, bins, min_cos_angle=np.exp(-2)):
     """
     Gets L and <cos(theta(L))>
 
     Args:
-        cos_angle: length N, element i is angle between two segmens
         L: length N, element i is contour length between same segments as
         cos_angle
+        cos_angle: length N, element i is angle between two segmens
 
         n_bins: we will average cos_angle in this many bins from its min to max
 
@@ -166,7 +165,7 @@ def get_L_and_mean_angle(cos_angle, L, n_bins, min_cos_angle=np.exp(-2)):
     """
 
     # last edge is right bin
-    edges, mean_cos_angle = _binned_stat(x=L, y=cos_angle, n_bins=n_bins)
+    edges, mean_cos_angle = _binned_stat(x=L, y=cos_angle, bins=bins)
     # filter to the bins with at least f% of the total size
     values, _ = np.histogram(a=L, bins=edges)
     bins_with_data = np.where(values > 0)[0]
@@ -233,7 +232,7 @@ def angle_differences(x_deriv,y_deriv):
     assert ((angle_diff_matrix >= 0) & (angle_diff_matrix <= 2 * np.pi)).all()
     return angle_diff_matrix
 
-def lengths_and_angles(spline):
+def lengths_and_angles(spline,spline_derivative):
     """
     gets Cos(Theta(i)) and L(i), where i runs along the spline order given,
     and L is the contour length between segments chosen at index i
@@ -247,7 +246,7 @@ def lengths_and_angles(spline):
     """
     # get the x and y coordinates of the spline
     x_spline, y_spline = spline
-    x_deriv, y_deriv = np.gradient(x_spline),np.gradient(y_spline)
+    x_deriv, y_deriv = spline_derivative
     L_contour = contour_lengths(x_spline, y_spline)
     n = L_contour.size
     contour_length_matrix = _difference_matrix(L_contour, L_contour)

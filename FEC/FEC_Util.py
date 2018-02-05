@@ -6,13 +6,13 @@ import matplotlib.pyplot as plt
 import sys,ast,os
 
 import copy
-from UtilIgor.DataObj import DataObj
-from UtilIgor.TimeSepForceObj import TimeSepForceObj,Bunch
-from UtilIgor import PxpLoader,ProcessSingleWave
-from UtilIgor.WaveDataGroup import WaveDataGroup
-from UtilIgor import TimeSepForceObj
-from UtilGeneral.IgorUtil import SavitskyFilter
-from UtilGeneral import GenUtilities,CheckpointUtilities
+from ..UtilIgor.DataObj import DataObj
+from ..UtilIgor.TimeSepForceObj import TimeSepForceObj,Bunch
+from ..UtilIgor import PxpLoader,ProcessSingleWave
+from ..UtilIgor.WaveDataGroup import WaveDataGroup
+from ..UtilIgor import TimeSepForceObj
+from ..UtilGeneral.IgorUtil import SavitskyFilter
+from ..UtilGeneral import GenUtilities,CheckpointUtilities
 
 default_filter_pct = 0.01
 

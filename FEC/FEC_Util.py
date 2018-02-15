@@ -166,7 +166,7 @@ def read_and_cache_pxp(directory,cache_name=None,force=True,**kwargs):
                                          force,directory,**kwargs)
     return d
     
-def fec_name_func(i,e):
+def fec_name_func(i,e,max_preamble_len=40,max_name_len=30):
     """
     Args:
         i: an arbitrary id integer  
@@ -178,8 +178,12 @@ def fec_name_func(i,e):
     """
     # save like <cache_dir>/<file_name>_<WaveName><arbitrary_id>
     file_name_src =  GenUtilities.file_name_from_path(e.Meta.SourceFile)
-    name = "{:s}_{:s}".format(file_name_src,
-                              e.Meta.Name)
+    preamble = file_name_src
+    if len(file_name_src) > max_preamble_len:
+        preamble = preamble[:max_preamble_len//2] + "_" + \
+                   preamble[-max_preamble_len//2:]
+    name = "{:s}_{:s}".format(preamble,
+                              e.Meta.Name[:max_name_len])
     return name                                  
     
 def cache_individual_waves_in_directory(pxp_dir,cache_dir,limit=None,

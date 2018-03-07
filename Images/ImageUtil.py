@@ -66,10 +66,12 @@ def smart_colorbar(im,ax=plt.gca(),fig=plt.gcf(),
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.1)
     if (not add_space_only):
-        PlotUtilities.colorbar(label,fig=fig,
-                               bar_kwargs=dict(mappable=im,cax=cax))    
+        to_ret = PlotUtilities.colorbar(label,fig=fig,
+                               bar_kwargs=dict(mappable=im,cax=cax))
+        return to_ret
     else:
         cax.axis('off')
+        return None
 
     
 def make_image_plot(im,imshow_kwargs=dict(cmap=plt.cm.afmhot),pct=50):

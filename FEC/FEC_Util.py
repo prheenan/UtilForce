@@ -65,7 +65,7 @@ def _groups_to_time_sep_force(m_data,limit):
     # note: limit=None gives everything on upper bound
     return Objs[:limit]
     
-def read_ibw_directory(directory,grouping_function,limit=None):
+def read_ibw_directory(directory,grouping_function,limit=None,**kw):
     """
     Reads all ibw files in the given directory
     
@@ -73,11 +73,12 @@ def read_ibw_directory(directory,grouping_function,limit=None):
         directory: where to read from
         grouping_function: how to group the ibw files, by file name
         limit: how many to load
+        kw: passed to load_ibw_from_directory
     Returns: at most Limit objects
     """
     data = PxpLoader.\
         load_ibw_from_directory(directory,limit=limit,
-                                grouping_function=grouping_function)
+                                grouping_function=grouping_function,**kw)
     return _groups_to_time_sep_force(data,limit=limit)
     
 def cache_ibw_directory(cache_directory,in_directory,limit=None,force=False,

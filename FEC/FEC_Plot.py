@@ -142,9 +142,9 @@ def FEC(TimeSepForceObj,NFilterPoints=50,
     FEC_AlreadySplit(Appr,Retr,NFilterPoints=NFilterPoints,**kwargs)
     
 
-def heat_map_fec(time_sep_force_objects,num_bins=(100,100),
+def heat_map_fec(time_sep_force_objects,num_bins=(100,100),title="FEC Heatmap",
                  separation_max = None,n_filter_func=None,use_colorbar=True,
-                 ConversionOpts=def_conversion_opts,cmap='afmhot'):
+                 ConversionOpts=def_conversion_opts,cmap='afmhot',bins=None):
     """
     Plots a force extension curve. Splits the curve into approach and 
     Retract and pre-processes by default
@@ -182,11 +182,12 @@ def heat_map_fec(time_sep_force_objects,num_bins=(100,100),
     separations = separations[idx_use]
     forces = forces[idx_use]
     # make a heat map, essentially
+    bins_input = bins if bins is not None else num_bins
     counts, xedges, yedges, Image = plt.hist2d(separations, forces,
-                                               bins=num_bins,cmap=cmap)
+                                               bins=bins_input,cmap=cmap)
     PlotUtilities.lazyLabel("Separation (nm)",
                             "Force (pN)",
-                            "Force-Extension Heatmap")
+                            title)
     if (use_colorbar): 
         cbar = plt.colorbar()
         label = '# of points in (Force,Separation) Bin'

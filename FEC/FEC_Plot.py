@@ -142,9 +142,10 @@ def FEC(TimeSepForceObj,NFilterPoints=50,
     FEC_AlreadySplit(Appr,Retr,NFilterPoints=NFilterPoints,**kwargs)
     
 
-def heat_map_fec(time_sep_force_objects,num_bins=(100,100),
+def heat_map_fec(time_sep_force_objects,num_bins=(100,100),title="FEC Heatmap",
                  separation_max = None,n_filter_func=None,use_colorbar=True,
-                 ConversionOpts=def_conversion_opts,cmap='afmhot'):
+                 ConversionOpts=def_conversion_opts,cmap='afmhot',bins=None,
+                 x_func=None):
     """
     Plots a force extension curve. Splits the curve into approach and 
     Retract and pre-processes by default
@@ -171,7 +172,9 @@ def heat_map_fec(time_sep_force_objects,num_bins=(100,100),
     if n_filter_func is not None:
         objs = [FEC_Util.GetFilteredForce(o,n_filter_func(o)) 
                 for o in objs]
-    filtered_data = [(retr.Separation,retr.Force) for retr in objs]
+    if x_func is None:
+        x_func = lambda x : x.Separation
+    filtered_data = [(x_func(retr),retr.Force) for retr in objs]
     separations = np.concatenate([r[0] for r in filtered_data])
     forces = np.concatenate([r[1] for r in filtered_data])
     if (separation_max is not None):
@@ -182,11 +185,12 @@ def heat_map_fec(time_sep_force_objects,num_bins=(100,100),
     separations = separations[idx_use]
     forces = forces[idx_use]
     # make a heat map, essentially
+    bins_input = bins if bins is not None else num_bins
     counts, xedges, yedges, Image = plt.hist2d(separations, forces,
-                                               bins=num_bins,cmap=cmap)
+                                               bins=bins_input,cmap=cmap)
     PlotUtilities.lazyLabel("Separation (nm)",
                             "Force (pN)",
-                            "Force-Extension Heatmap")
+                            title)
     if (use_colorbar): 
         cbar = plt.colorbar()
         label = '# of points in (Force,Separation) Bin'

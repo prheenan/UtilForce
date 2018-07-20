@@ -857,3 +857,50 @@ def read_time_sep_force_from_csv(input_path,has_events=False):
     return to_return
 
 
+def _create_psuedo_fec_to_save(fec_w_stats):
+    """
+    :param fec_w_stats:  a force-extension curve, where the approach is
+    assumed to be taken from the end of the retract
+    :return: a new force-extension curve, such that the approach is from 0 to
+    TriggerTime, and the Retract is from TriggerTime to the end
+    """
+    approach = fec_w_stats.approach._slice(slice(0,None,1))
+    retract = fec_w_stats.retract._slice(slice(0,None,1))
+    # 'fix' the approach so the z makes sense
+    offset_x = max(approach.Separation)
+    approach.ZSnsr -= offset_x
+    approach.Separation -= offset_x
+    # add on the retract minimum
+    offset_x_retract = min(retract.Separation)
+    approach.ZSnsr += offset_x_retract
+    approach.Separation += offset_x_retract
+    # reset the time bases
+    approach.Time -= min(approach.Time)
+    # set the retract to start immediately ater
+    retract_start_time = max(approach.Time)
+    dt = retract.Time[1] - retract.Time[0]
+    retract.Time -= (min(retract.Time) - retract_start_time)
+    retract.Time += dt
+    # combine all the waves
+    cat = lambda f: np.concatenate( [f(approach),f(retract)])
+    time = cat(lambda x_tmp: x_tmp.Time)
+    sep = cat(lambda x_tmp: x_tmp.Separation)
+    force = cat(lambda x_tmp: x_tmp.Force)
+    z = cat(lambda x_tmp: x_tmp.ZSnsr)
+    # make a new TimeSepForce object...
+    dict_v = TimeSepForceObj._meta_dict(SpringConstant=approach.SpringConstant,
+                                        Velocity=approach.Velocity,Invols=1,
+                                        DwellSetting=0,DwellTime=0,
+                                        Name="")
+    dict_v['TriggerTime'] = min(retract.Time)
+    to_ret = TimeSepForceObj._cols_to_TimeSepForceObj(time=time,sep=sep,
+                                                      force=force,
+                                                      meta_dict=dict_v)
+    events = [ [e[0],e[1]] for e in retract.Events]
+    to_ret.set_events(events)
+    # set the FEC to be negative, since FEATHER flips it by default
+    to_ret.Force *= -1
+    return to_ret
+
+
+

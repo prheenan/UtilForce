@@ -792,6 +792,19 @@ def GetRegionForWLCFit(RetractOriginal,NFilterPoints=None,
 def _safe_meta_key_val(s):
     return str(unicode(s).replace(",",";").replace(":","/"))
 
+
+def _save_single_csv(out_dir,fec_to_save):
+    """
+    :param out_dir: where to save
+    :param fec_to_save:  what data to save
+    :return: nothing, saves the file if no error
+    """
+    file_name = os.path.basename(fec_to_save.Meta.SourceFile)
+    meta_name = fec_to_save.Meta.Name
+    output_path = out_dir + file_name + meta_name + ".csv"
+    save_time_sep_force_as_csv(output_path, fec_to_save)
+    return output_path
+
 def save_time_sep_force_as_csv(output_path,data):
     """
     saves the time,sep,force and mets infromation of data to outputpath

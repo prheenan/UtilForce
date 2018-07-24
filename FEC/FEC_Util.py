@@ -516,6 +516,24 @@ def GetFilteredForce(Obj,NFilterPoints=None,FilterFunc=SavitskyFilter):
     ToRet.set_z_sensor(FilterFunc(Obj.ZSnsr,nSmooth=NFilterPoints))
     return ToRet
 
+
+def filter_single(d,t_filter,t_decimate,**kw):
+    """
+    :param d:  force-extension curve (TimeSepForceObj) to filter
+    :param t_filter: amount to filter, in s. Should be > timestep
+    :param t_decimate: amoutn to decimate, in s. should be < t_fiter
+    :param **kw: passed to GetFilteredForce
+    :return: filtered object
+    """
+    dt = d.Time[1] - d.Time[0]
+    n_filter = int(np.ceil(t_filter/dt))
+    n_decimate = int(np.ceil(t_decimate/dt))
+    assert n_decimate <= n_filter , "Shouldn't decimate more than you filter"
+    assert n_filter > 1 , "Not filtering at all"
+    filtered = GetFilteredForce(Obj=d,NFilterPoints=n_filter,**kw)
+    filtered_and_decimated = filtered._slice(slice(0,None,n_decimate))
+    return filtered_and_decimated
+
 def GetSurfaceIndexAndForce(TimeSepForceObj,Fraction,FilterPoints,
                             ZeroAtStart=True,FlipSign=True):
     """

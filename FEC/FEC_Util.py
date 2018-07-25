@@ -307,7 +307,7 @@ def UnitConvert(TimeSepForceObj,
     ObjCopy.Force = ConvertY(TimeSepForceObj.Force)
     ObjCopy.Separation = ConvertX(TimeSepForceObj.Separation)
     try:
-        ObjCopy.set_z_sensor(ConvertX(TimeSepForceObj.Zsnsr))
+        ObjCopy.set_z_sensor(ConvertX(TimeSepForceObj.ZSnsr))
     except AttributeError as E:
         # OK if there isnt a Zsnsr
         pass

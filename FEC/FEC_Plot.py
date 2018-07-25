@@ -163,12 +163,11 @@ def heat_map_fec(time_sep_force_objects,num_bins=(100,100),title="FEC Heatmap",
         separation_max: if not None, only histogram up to and including this
         separation. should be in units *after* conversion (default: nanometers)
         
-        ConversionOpts: passed to UnitConvert. Default converts x to nano<X>
-        and y to pico<Y>
+        ConversionOpts: Dictionary with ConvertX and ConvertY keys, values
+        take in a numpy array and return how it is to be plotted.
     """                 
     # convert everything...
-    objs = [FEC_Util.UnitConvert(r,**ConversionOpts) 
-            for r in time_sep_force_objects]
+    objs = [r._slice(slice(0,None,1)) for r in time_sep_force_objects]
     if n_filter_func is not None:
         objs = [FEC_Util.GetFilteredForce(o,n_filter_func(o)) 
                 for o in objs]
@@ -177,6 +176,9 @@ def heat_map_fec(time_sep_force_objects,num_bins=(100,100),title="FEC Heatmap",
     filtered_data = [(x_func(retr),retr.Force) for retr in objs]
     separations = np.concatenate([r[0] for r in filtered_data])
     forces = np.concatenate([r[1] for r in filtered_data])
+    # convert the data...
+    separations = def_conversion_opts['ConvertX'](separations)
+    forces = def_conversion_opts['ConvertY'](forces)
     if (separation_max is not None):
         idx_use = np.where(separations < separation_max)
     else:

@@ -12,6 +12,24 @@ import copy
 def_conversion_opts =dict(ConvertX = lambda x: x*1e9,
                           ConvertY = lambda y: y*1e12)
 
+def _filter_and_plot(x,y,n_filter_points,style_filtered):
+    """
+    :param x: to use; filtered by  n_filter_points
+    :param y: to use: filtered by n_filter_points
+    :param n_filter_points: number of filter points to use
+    :param style_filtered: for the plotting
+    :return: tuple of <x,y> filtered, if n_filter_points <=1, doesn't plot,
+    and returns the original data.
+    """
+    if (n_filter_points > 1):
+        x_filtered = SavitskyFilter(x, nSmooth=n_filter_points)
+        y_filtered = SavitskyFilter(y, nSmooth=n_filter_points)
+        plt.plot(x_filtered, y_filtered, **style_filtered)
+    else:
+        x_filtered = x
+        y_filtered = y
+    return x_filtered, y_filtered
+
 def _fec_base_plot(x,y,n_filter_points=None,label="",
                    style_data=dict(color='k',alpha=0.3),
                    style_filtered=None):
@@ -32,13 +50,8 @@ def _fec_base_plot(x,y,n_filter_points=None,label="",
         style_filtered['label'] = label
     if (n_filter_points is None):
         n_filter_points = int(np.ceil(x.size * FEC_Util.default_filter_pct))
-    if (n_filter_points > 1):
-        x_filtered = SavitskyFilter(x,nSmooth=n_filter_points)
-        y_filtered = SavitskyFilter(y,nSmooth=n_filter_points)
-        plt.plot(x_filtered,y_filtered,**style_filtered)
-    else:
-        x_filtered = x
-        y_filtered = y
+    x_filtered, y_filtered = _filter_and_plot(x,y,n_filter_points,
+                                              style_filtered)
     plt.plot(x,y,**style_data)
     return x_filtered,y_filtered
  

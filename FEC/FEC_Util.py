@@ -13,7 +13,7 @@ from ..UtilIgor.WaveDataGroup import WaveDataGroup
 from ..UtilIgor import TimeSepForceObj
 from ..UtilGeneral.IgorUtil import SavitskyFilter
 from ..UtilGeneral import GenUtilities,CheckpointUtilities
-
+import warnings
 default_filter_pct = 0.01
 
 class DNAWlcPoints:
@@ -511,9 +511,11 @@ def GetFilteredForce(Obj,NFilterPoints=None,FilterFunc=SavitskyFilter):
         NFilterPoints = int(np.ceil(default_filter_pct*Obj.Force.size))
     ToRet = Obj._slice(slice(0,None,1))
     ToRet.Force = FilterFunc(Obj.Force,nSmooth=NFilterPoints)
-    ToRet.Separation = FilterFunc(Obj.LowResData.sep,\
-                                  nSmooth=NFilterPoints)
-    ToRet.set_z_sensor(FilterFunc(Obj.ZSnsr,nSmooth=NFilterPoints))
+    ToRet.Separation = FilterFunc(Obj.Separation,nSmooth=NFilterPoints)
+    try:
+        ToRet.ZSnsr = FilterFunc(Obj.ZSnsr,nSmooth=NFilterPoints)
+    except AttributeError:
+        warnings.warn("In FECUtil:GetFilteredForce, couldn't filter ZSnsr")
     return ToRet
 
 

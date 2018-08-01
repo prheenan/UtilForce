@@ -145,7 +145,7 @@ def FEC(TimeSepForceObj,NFilterPoints=50,
 def heat_map_fec(time_sep_force_objects,num_bins=(100,100),title="FEC Heatmap",
                  separation_max = None,n_filter_func=None,use_colorbar=True,
                  ConversionOpts=def_conversion_opts,cmap='afmhot',bins=None,
-                 x_func=None):
+                 x_func=None,y_func=None):
     """
     Plots a force extension curve. Splits the curve into approach and 
     Retract and pre-processes by default
@@ -165,6 +165,8 @@ def heat_map_fec(time_sep_force_objects,num_bins=(100,100),title="FEC Heatmap",
         
         ConversionOpts: Dictionary with ConvertX and ConvertY keys, values
         take in a numpy array and return how it is to be plotted.
+
+        x_func/yfunc: takes in a single object, returns the x or y
     """                 
     # convert everything...
     objs = [r._slice(slice(0,None,1)) for r in time_sep_force_objects]
@@ -173,12 +175,14 @@ def heat_map_fec(time_sep_force_objects,num_bins=(100,100),title="FEC Heatmap",
                 for o in objs]
     if x_func is None:
         x_func = lambda x : x.Separation
-    filtered_data = [(x_func(retr),retr.Force) for retr in objs]
+    if y_func is None:
+        y_func = lambda _o: _o.Force
+    filtered_data = [(x_func(retr),y_func(retr)) for retr in objs]
     separations = np.concatenate([r[0] for r in filtered_data])
     forces = np.concatenate([r[1] for r in filtered_data])
     # convert the data...
-    separations = def_conversion_opts['ConvertX'](separations)
-    forces = def_conversion_opts['ConvertY'](forces)
+    separations = ConversionOpts['ConvertX'](separations)
+    forces = ConversionOpts['ConvertY'](forces)
     if (separation_max is not None):
         idx_use = np.where(separations < separation_max)
     else:

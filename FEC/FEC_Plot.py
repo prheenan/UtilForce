@@ -158,7 +158,7 @@ def FEC(TimeSepForceObj,NFilterPoints=50,
 def heat_map_fec(time_sep_force_objects,num_bins=(100,100),title="FEC Heatmap",
                  separation_max = None,n_filter_func=None,use_colorbar=True,
                  ConversionOpts=def_conversion_opts,cmap='afmhot',bins=None,
-                 x_func=None,y_func=None):
+                 x_func=None,y_func=None,force_max=None):
     """
     Plots a force extension curve. Splits the curve into approach and 
     Retract and pre-processes by default
@@ -200,6 +200,12 @@ def heat_map_fec(time_sep_force_objects,num_bins=(100,100),title="FEC Heatmap",
         idx_use = np.where(separations < separation_max)
     else:
         # use everything
+        idx_use = slice(0,None,1)
+    separations = separations[idx_use]
+    forces = forces[idx_use]
+    if (force_max is not None):
+        idx_use = np.where(forces < force_max)
+    else:
         idx_use = slice(0,None,1)
     separations = separations[idx_use]
     forces = forces[idx_use]

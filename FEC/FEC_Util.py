@@ -13,7 +13,7 @@ from ..UtilIgor.WaveDataGroup import WaveDataGroup
 from ..UtilIgor import TimeSepForceObj
 from ..UtilGeneral.IgorUtil import SavitskyFilter
 from ..UtilGeneral import GenUtilities,CheckpointUtilities
-
+import warnings
 default_filter_pct = 0.01
 
 class DNAWlcPoints:
@@ -307,7 +307,7 @@ def UnitConvert(TimeSepForceObj,
     ObjCopy.Force = ConvertY(TimeSepForceObj.Force)
     ObjCopy.Separation = ConvertX(TimeSepForceObj.Separation)
     try:
-        ObjCopy.set_z_sensor(ConvertX(TimeSepForceObj.Zsnsr))
+        ObjCopy.set_z_sensor(ConvertX(TimeSepForceObj.ZSnsr))
     except AttributeError as E:
         # OK if there isnt a Zsnsr
         pass
@@ -511,10 +511,30 @@ def GetFilteredForce(Obj,NFilterPoints=None,FilterFunc=SavitskyFilter):
         NFilterPoints = int(np.ceil(default_filter_pct*Obj.Force.size))
     ToRet = Obj._slice(slice(0,None,1))
     ToRet.Force = FilterFunc(Obj.Force,nSmooth=NFilterPoints)
-    ToRet.Separation = FilterFunc(Obj.LowResData.sep,\
-                                  nSmooth=NFilterPoints)
-    ToRet.set_z_sensor(FilterFunc(Obj.ZSnsr,nSmooth=NFilterPoints))
+    ToRet.Separation = FilterFunc(Obj.Separation,nSmooth=NFilterPoints)
+    try:
+        ToRet.ZSnsr = FilterFunc(Obj.ZSnsr,nSmooth=NFilterPoints)
+    except AttributeError:
+        warnings.warn("In FECUtil:GetFilteredForce, couldn't filter ZSnsr")
     return ToRet
+
+
+def filter_single(d,t_filter,t_decimate,**kw):
+    """
+    :param d:  force-extension curve (TimeSepForceObj) to filter
+    :param t_filter: amount to filter, in s. Should be > timestep
+    :param t_decimate: amoutn to decimate, in s. should be < t_fiter
+    :param **kw: passed to GetFilteredForce
+    :return: filtered object
+    """
+    dt = d.Time[1] - d.Time[0]
+    n_filter = int(np.ceil(t_filter/dt))
+    n_decimate = int(np.ceil(t_decimate/dt))
+    assert n_decimate <= n_filter , "Shouldn't decimate more than you filter"
+    assert n_filter > 1 , "Not filtering at all"
+    filtered = GetFilteredForce(Obj=d,NFilterPoints=n_filter,**kw)
+    filtered_and_decimated = filtered._slice(slice(0,None,n_decimate))
+    return filtered_and_decimated
 
 def GetSurfaceIndexAndForce(TimeSepForceObj,Fraction,FilterPoints,
                             ZeroAtStart=True,FlipSign=True):
@@ -792,6 +812,19 @@ def GetRegionForWLCFit(RetractOriginal,NFilterPoints=None,
 def _safe_meta_key_val(s):
     return str(unicode(s).replace(",",";").replace(":","/"))
 
+
+def _save_single_csv(out_dir,fec_to_save):
+    """
+    :param out_dir: where to save
+    :param fec_to_save:  what data to save
+    :return: nothing, saves the file if no error
+    """
+    file_name = os.path.basename(fec_to_save.Meta.SourceFile)
+    meta_name = fec_to_save.Meta.Name
+    output_path = out_dir + file_name + meta_name + ".csv"
+    save_time_sep_force_as_csv(output_path, fec_to_save)
+    return output_path
+
 def save_time_sep_force_as_csv(output_path,data):
     """
     saves the time,sep,force and mets infromation of data to outputpath
@@ -855,5 +888,52 @@ def read_time_sep_force_from_csv(input_path,has_events=False):
         # set the events of the TimeSepForce Object
         to_return.set_events(events)
     return to_return
+
+
+def _create_psuedo_fec_to_save(fec_w_stats):
+    """
+    :param fec_w_stats:  a force-extension curve, where the approach is
+    assumed to be taken from the end of the retract
+    :return: a new force-extension curve, such that the approach is from 0 to
+    TriggerTime, and the Retract is from TriggerTime to the end
+    """
+    approach = fec_w_stats.approach._slice(slice(0,None,1))
+    retract = fec_w_stats.retract._slice(slice(0,None,1))
+    # 'fix' the approach so the z makes sense
+    offset_x = max(approach.Separation)
+    approach.ZSnsr -= offset_x
+    approach.Separation -= offset_x
+    # add on the retract minimum
+    offset_x_retract = min(retract.Separation)
+    approach.ZSnsr += offset_x_retract
+    approach.Separation += offset_x_retract
+    # reset the time bases
+    approach.Time -= min(approach.Time)
+    # set the retract to start immediately ater
+    retract_start_time = max(approach.Time)
+    dt = retract.Time[1] - retract.Time[0]
+    retract.Time -= (min(retract.Time) - retract_start_time)
+    retract.Time += dt
+    # combine all the waves
+    cat = lambda f: np.concatenate( [f(approach),f(retract)])
+    time = cat(lambda x_tmp: x_tmp.Time)
+    sep = cat(lambda x_tmp: x_tmp.Separation)
+    force = cat(lambda x_tmp: x_tmp.Force)
+    z = cat(lambda x_tmp: x_tmp.ZSnsr)
+    # make a new TimeSepForce object...
+    dict_v = TimeSepForceObj._meta_dict(SpringConstant=approach.SpringConstant,
+                                        Velocity=approach.Velocity,Invols=1,
+                                        DwellSetting=0,DwellTime=0,
+                                        Name="")
+    dict_v['TriggerTime'] = min(retract.Time)
+    to_ret = TimeSepForceObj._cols_to_TimeSepForceObj(time=time,sep=sep,
+                                                      force=force,
+                                                      meta_dict=dict_v)
+    events = [ [e[0],e[1]] for e in retract.Events]
+    to_ret.set_events(events)
+    # set the FEC to be negative, since FEATHER flips it by default
+    to_ret.Force *= -1
+    return to_ret
+
 
 

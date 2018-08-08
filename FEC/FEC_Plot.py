@@ -12,6 +12,24 @@ import copy
 def_conversion_opts =dict(ConvertX = lambda x: x*1e9,
                           ConvertY = lambda y: y*1e12)
 
+def _filter_and_plot(x,y,n_filter_points,style_filtered):
+    """
+    :param x: to use; filtered by  n_filter_points
+    :param y: to use: filtered by n_filter_points
+    :param n_filter_points: number of filter points to use
+    :param style_filtered: for the plotting
+    :return: tuple of <x,y> filtered, if n_filter_points <=1, doesn't plot,
+    and returns the original data.
+    """
+    if (n_filter_points > 1):
+        x_filtered = SavitskyFilter(x, nSmooth=n_filter_points)
+        y_filtered = SavitskyFilter(y, nSmooth=n_filter_points)
+        plt.plot(x_filtered, y_filtered, **style_filtered)
+    else:
+        x_filtered = x
+        y_filtered = y
+    return x_filtered, y_filtered
+
 def _fec_base_plot(x,y,n_filter_points=None,label="",
                    style_data=dict(color='k',alpha=0.3),
                    style_filtered=None):
@@ -32,13 +50,8 @@ def _fec_base_plot(x,y,n_filter_points=None,label="",
         style_filtered['label'] = label
     if (n_filter_points is None):
         n_filter_points = int(np.ceil(x.size * FEC_Util.default_filter_pct))
-    if (n_filter_points > 1):
-        x_filtered = SavitskyFilter(x,nSmooth=n_filter_points)
-        y_filtered = SavitskyFilter(y,nSmooth=n_filter_points)
-        plt.plot(x_filtered,y_filtered,**style_filtered)
-    else:
-        x_filtered = x
-        y_filtered = y
+    x_filtered, y_filtered = _filter_and_plot(x,y,n_filter_points,
+                                              style_filtered)
     plt.plot(x,y,**style_data)
     return x_filtered,y_filtered
  
@@ -145,7 +158,7 @@ def FEC(TimeSepForceObj,NFilterPoints=50,
 def heat_map_fec(time_sep_force_objects,num_bins=(100,100),title="FEC Heatmap",
                  separation_max = None,n_filter_func=None,use_colorbar=True,
                  ConversionOpts=def_conversion_opts,cmap='afmhot',bins=None,
-                 x_func=None):
+                 x_func=None,y_func=None,force_max=None):
     """
     Plots a force extension curve. Splits the curve into approach and 
     Retract and pre-processes by default
@@ -163,24 +176,36 @@ def heat_map_fec(time_sep_force_objects,num_bins=(100,100),title="FEC Heatmap",
         separation_max: if not None, only histogram up to and including this
         separation. should be in units *after* conversion (default: nanometers)
         
-        ConversionOpts: passed to UnitConvert. Default converts x to nano<X>
-        and y to pico<Y>
+        ConversionOpts: Dictionary with ConvertX and ConvertY keys, values
+        take in a numpy array and return how it is to be plotted.
+
+        x_func/yfunc: takes in a single object, returns the x or y
     """                 
     # convert everything...
-    objs = [FEC_Util.UnitConvert(r,**ConversionOpts) 
-            for r in time_sep_force_objects]
+    objs = [r._slice(slice(0,None,1)) for r in time_sep_force_objects]
     if n_filter_func is not None:
         objs = [FEC_Util.GetFilteredForce(o,n_filter_func(o)) 
                 for o in objs]
     if x_func is None:
         x_func = lambda x : x.Separation
-    filtered_data = [(x_func(retr),retr.Force) for retr in objs]
+    if y_func is None:
+        y_func = lambda _o: _o.Force
+    filtered_data = [(x_func(retr),y_func(retr)) for retr in objs]
     separations = np.concatenate([r[0] for r in filtered_data])
     forces = np.concatenate([r[1] for r in filtered_data])
+    # convert the data...
+    separations = ConversionOpts['ConvertX'](separations)
+    forces = ConversionOpts['ConvertY'](forces)
     if (separation_max is not None):
         idx_use = np.where(separations < separation_max)
     else:
         # use everything
+        idx_use = slice(0,None,1)
+    separations = separations[idx_use]
+    forces = forces[idx_use]
+    if (force_max is not None):
+        idx_use = np.where(forces < force_max)
+    else:
         idx_use = slice(0,None,1)
     separations = separations[idx_use]
     forces = forces[idx_use]

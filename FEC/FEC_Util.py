@@ -510,6 +510,8 @@ def GetFilteredForce(Obj,NFilterPoints=None,FilterFunc=SavitskyFilter):
     if (NFilterPoints is None):
         NFilterPoints = int(np.ceil(default_filter_pct*Obj.Force.size))
     ToRet = Obj._slice(slice(0,None,1))
+    if NFilterPoints <= 1:
+        return ToRet
     ToRet.Force = FilterFunc(Obj.Force,nSmooth=NFilterPoints)
     ToRet.Separation = FilterFunc(Obj.Separation,nSmooth=NFilterPoints)
     try:

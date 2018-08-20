@@ -21,23 +21,23 @@ class WormObject(object):
             image: the image object, for getting dimensions
             header: the header information to store from the file
         """
-        self._x = x
-        self._y = y
+        self._x = list(x)
+        self._y = list(y)
         self.px_to_meters = px_to_meters
         self.file_name = file_name
         self.header = header
     @property
     def x(self):
-        return self._x
+        return np.array(self._x)
     @property
     def y(self):
-        return self._y
+        return np.array(self._y)
     @x.setter
     def x(self,x):
-        self._x = x
+        self._x = list(x)
     @y.setter
     def y(self,y):
-        self._y = y
+        self._y = list(y)
     @property
     def x_meters(self):
         return self.x * self.px_to_meters

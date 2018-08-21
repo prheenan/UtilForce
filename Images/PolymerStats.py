@@ -183,19 +183,6 @@ def L_and_mean_angle(L,cos_angle, bins, min_cos_angle=np.exp(-2)):
     return edges, mean_cos_angle
 
 
-def Lp_log_mean_angle_and_coeffs(L, mean_cos_angle):
-    """
-    :param L: the lengths
-    :param mean_cos_angle: <Cos(theta(L)>
-    :return:  persistence length, -Log(<Cos(Theta(L))), and linear polynomial
-    coefficients for a given <Cos(Theta(L))>
-    """
-    log_mean_angle = -np.log(mean_cos_angle)
-    # fit to -log<Cos(angle)> to edges_nm
-    coeffs = np.polyfit(x=L, y=log_mean_angle, deg=1)
-    persistence_length = 1 / coeffs[0]
-    return persistence_length, log_mean_angle, coeffs
-
 def contour_lengths(x,y):
     """
     :param x: x location at index i, size N

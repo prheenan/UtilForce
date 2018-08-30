@@ -58,7 +58,7 @@ def cache_images_in_directory(pxp_dir,cache_dir,**kwargs):
     
 def smart_colorbar(im,ax=plt.gca(),fig=plt.gcf(),
                    divider_kw=dict(size="5%",pad=0.1),size="5%",
-                   label="Height (nm)",add_space_only=False):
+                   label="Height (nm)",add_space_only=False,**kw):
     """
     Makes a color bar on the given axis/figure by moving the axis over a little 
     """    
@@ -67,7 +67,8 @@ def smart_colorbar(im,ax=plt.gca(),fig=plt.gcf(),
     cax = divider.append_axes("right", size=size, pad=0.1)
     if (not add_space_only):
         to_ret = PlotUtilities.colorbar(label,fig=fig,
-                               bar_kwargs=dict(mappable=im,cax=cax))
+                                        bar_kwargs=dict(mappable=im,cax=cax),
+                                        **kw)
         return to_ret
     else:
         cax.axis('off')

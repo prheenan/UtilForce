@@ -11,7 +11,7 @@ import sys,scipy,copy
 
 
 class WormObject(object):
-    def __init__(self,x,y,header,file_name,px_to_meters):
+    def __init__(self,x,y,header,file_name,px_to_meters_x,px_to_meters_y):
         """
         object for keeping track of an x,y trace
         
@@ -23,7 +23,8 @@ class WormObject(object):
         """
         self._x = list(x)
         self._y = list(y)
-        self.px_to_meters = px_to_meters
+        self.px_to_meters_x = px_to_meters_x
+        self.px_to_meters_y = px_to_meters_y
         self.file_name = file_name
         self.header = header
     @property
@@ -40,10 +41,10 @@ class WormObject(object):
         self._y = list(y)
     @property
     def x_meters(self):
-        return self.x * self.px_to_meters
+        return self.x * self.px_to_meters_x
     @property
     def y_meters(self):
-        return self.y * self.px_to_meters
+        return self.y * self.px_to_meters_y
 
 class TaggedImage:
     def __init__(self,image,worm_objects):

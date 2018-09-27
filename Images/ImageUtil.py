@@ -56,8 +56,7 @@ def cache_images_in_directory(pxp_dir,cache_dir,**kwargs):
                                                           **kwargs)
     return to_ret                                                  
     
-def smart_colorbar(im,ax=plt.gca(),fig=plt.gcf(),
-                   divider_kw=dict(size="5%",pad=0.1),size="5%",
+def smart_colorbar(im,ax=plt.gca(),fig=plt.gcf(),size="5%",
                    colorbar_location='right',
                    label="Height (nm)",add_space_only=False,**kw):
     """

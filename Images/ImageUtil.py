@@ -22,7 +22,7 @@ def line_background(image,deg=3,**kw):
     coords = np.arange(shape[1])
     n_rows = shape[0]
     for i in range(n_rows):
-        raw_row = to_ret[i,:]
+        raw_row = image[i,:]
         coeffs = np.polyfit(x=coords,y=raw_row,deg=deg,**kw)
         corr = np.polyval(coeffs,x=coords)
         to_ret[i,:] = corr

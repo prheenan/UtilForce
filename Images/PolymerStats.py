@@ -219,6 +219,20 @@ def angle_differences(x_deriv,y_deriv):
     assert ((angle_diff_matrix >= 0) & (angle_diff_matrix <= 2 * np.pi)).all()
     return angle_diff_matrix
 
+def _difference_matrices(spline,spline_derivative):
+    """
+    :param spline: see lengths_and_angles
+    :param spline_derivative:  see lengths_and_angles
+    :return: tuple of (contour length matrix, angle difference matirx)
+    """
+    # get the x and y coordinates of the spline
+    x_spline, y_spline = spline
+    x_deriv, y_deriv = spline_derivative
+    L_contour = contour_lengths(x_spline, y_spline)
+    contour_length_matrix = _difference_matrix(L_contour, L_contour)
+    angle_diff_matrix = angle_differences(x_deriv, y_deriv)
+    return contour_length_matrix, angle_diff_matrix
+
 def lengths_and_angles(spline,spline_derivative):
     """
     gets Cos(Theta(i)) and L(i), where i runs along the spline order given,
@@ -231,13 +245,10 @@ def lengths_and_angles(spline,spline_derivative):
         tuple of L(i),Cos(Theta(L(i))). Note that L0 = max(L(i)), where i is
         an index running over all possible non-redudant differences.
     """
-    # get the x and y coordinates of the spline
-    x_spline, y_spline = spline
-    x_deriv, y_deriv = spline_derivative
-    L_contour = contour_lengths(x_spline, y_spline)
+    contour_length_matrix, angle_diff_matrix = \
+        _difference_matrices(spline,spline_derivative)
+    L_contour = contour_lengths(*spline)
     n = L_contour.size
-    contour_length_matrix = _difference_matrix(L_contour, L_contour)
-    angle_diff_matrix = angle_differences(x_deriv, y_deriv)
     # POST: angles calculated correctly...
     # only look at the upper triangular part
     idx_upper_tri = np.triu_indices(n)

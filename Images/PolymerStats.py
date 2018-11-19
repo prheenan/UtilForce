@@ -166,11 +166,13 @@ def L_and_mean_angle(L,cos_angle, bins, min_cos_angle=np.exp(-2)):
 
     # last edge is right bin
     edges, mean_cos_angle = _binned_stat(x=L, y=cos_angle, bins=bins)
+    _, mean_cos_angle_sq = _binned_stat(x=L,y=cos_angle**2,bins=bins)
     # filter to the bins with at least f% of the total size
     values, _ = np.histogram(a=L, bins=edges)
     bins_with_data = np.where(values > 0)[0]
     assert bins_with_data.size > 0
     mean_cos_angle = mean_cos_angle[bins_with_data]
+    mean_cos_angle_sq = mean_cos_angle_sq[bins_with_data]
     edges = edges[bins_with_data]
     # only look at where cos(theta) is reasonable positive, otherwise we
     # cant take a log. This amounts to only looking in the upper quad
@@ -178,9 +180,10 @@ def L_and_mean_angle(L,cos_angle, bins, min_cos_angle=np.exp(-2)):
     assert good_idx.size > 0
     sanit = lambda x: x[good_idx]
     mean_cos_angle = sanit(mean_cos_angle)
+    mean_cos_angle_sq = sanit(mean_cos_angle_sq)
     edges = sanit(edges)
     assert edges.size > 0, "Couldn't find data to fit"
-    return edges, mean_cos_angle
+    return edges, mean_cos_angle, mean_cos_angle_sq
 
 
 def contour_lengths(x,y):

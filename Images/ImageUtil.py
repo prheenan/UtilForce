@@ -10,29 +10,41 @@ from ..UtilIgor import PxpLoader,ProcessSingleWave
 from ..UtilGeneral import GenUtilities,PlotUtilities
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-def line_background(image,deg=3,**kw):
+def fit_to_image(image,deg=1,thresh=None,**kw):
+    to_ret = np.zeros_like(image)
+    shape = to_ret.shape
+    coords = np.arange(shape[1])
+    n_rows = shape[0]
+    mean = np.mean(image)
+    image_to_fit = image - mean
+    for i in range(n_rows):
+        raw_row = image_to_fit[i,:].copy()
+        if thresh is not None:
+            idx_to_fit = np.where(raw_row < thresh)[0]
+        else:
+            idx_to_fit = np.arange(raw_row.size,dtype=np.int64)
+        coeffs = np.polyfit(x=coords[idx_to_fit],y=raw_row[idx_to_fit],deg=deg,**kw)
+        corr = np.polyval(coeffs,x=coords)
+        to_ret[i,:] = corr
+    # add back in the mean, since we subtracted it
+    return to_ret + mean
+
+def line_background(image,deg=1,**kw):
     """
     :param image: original, to correct
     :param deg:  polynomial to subtract from each *row* of image
     :param kw:
     :return: array, polynomial fit to each row of image
     """
-    to_ret = np.zeros_like(image)
-    shape = to_ret.shape
-    coords = np.arange(shape[1])
-    n_rows = shape[0]
-    for i in range(n_rows):
-        raw_row = to_ret[i,:]
-        coeffs = np.polyfit(x=coords,y=raw_row,deg=deg,**kw)
-        corr = np.polyval(coeffs,x=coords)
-        to_ret[i,:] = corr
+    image_cp = image.copy()
+    to_ret = fit_to_image(image_cp, deg=deg,**kw)
     return to_ret
 
-def subtract_background(image,deg=3,**kwargs):
+def subtract_background(image,**kwargs):
     """
     subtracts a line of <deg> from each row in <images>
     """
-    corr = line_background(image,deg=deg,**kwargs)
+    corr = line_background(image,**kwargs)
     return image - corr
 
 def read_images_in_pxp_dir(dir,**kwargs):
@@ -56,15 +68,15 @@ def cache_images_in_directory(pxp_dir,cache_dir,**kwargs):
                                                           **kwargs)
     return to_ret                                                  
     
-def smart_colorbar(im,ax=plt.gca(),fig=plt.gcf(),
-                   divider_kw=dict(size="5%",pad=0.1),size="5%",
+def smart_colorbar(im,ax=plt.gca(),fig=plt.gcf(),size="5%",
+                   colorbar_location='right',
                    label="Height (nm)",add_space_only=False,**kw):
     """
     Makes a color bar on the given axis/figure by moving the axis over a little 
     """    
     # make a separate axis for the colorbar 
     divider = make_axes_locatable(ax)
-    cax = divider.append_axes("right", size=size, pad=0.1)
+    cax = divider.append_axes(colorbar_location, size=size, pad=0.1)
     if (not add_space_only):
         to_ret = PlotUtilities.colorbar(label,fig=fig,
                                         bar_kwargs=dict(mappable=im,cax=cax),

@@ -474,7 +474,7 @@ def GetApproachDwellRetract(o):
     Appr = MakeTimeSepForceFromSlice(o, SliceAppr)
     Retr = MakeTimeSepForceFromSlice(o, SliceRetr)
     Dwell = MakeTimeSepForceFromSlice(o,slice_dwell)
-    return Appr,Retr,Dwell
+    return Appr,Dwell, Retr
 
 
 def GetApproachRetract(o):
@@ -482,7 +482,7 @@ def GetApproachRetract(o):
     :param o: TimeSepForce to split by meta
     :return:  tuple of approach and retract only.
     """
-    Appr, Retr, _ = GetApproachDwellRetract(o)
+    Appr, _, Retr = GetApproachDwellRetract(o)
     return Appr,Retr
 
 

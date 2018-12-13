@@ -445,34 +445,44 @@ def SplitAndProcess(TimeSepForceObj,ConversionOpts=dict(),
     Appr,Retr = PreProcessFEC(ObjCopy,NFilterPoints=NFilterPoints,**kwargs)
     return Appr,Retr
 
-
-def GetApproachRetract(o):
+def GetApproachDwellRetract(o):
     """
     Get the approach and retraction curves of a TimeSepForceObject. Does *not*
     include the dwell portion
-    
+
     Args:
         o: the TimeSepForce Object, assumed 'raw' (ie: invols peak at top)
     Returns:
-        TUple of <Appr,Retract>, which are both TimeSepForce object of the
-        Approach and Retract regions
+        TUple of <Appr,Dwell,Retract>, which are TimeSepForce objects of the
+        Approach,Dwell, and Retract regions
     """
     ForceArray = o.Force
     TimeEndOfApproach = o.TriggerTime
     TimeStartOfRetract = TimeEndOfApproach + o.SurfaceDwellTime
     # figure out where the indices we want are
     Time = o.Time
-    IdxEndOfApproach = np.argmin(np.abs(Time-TimeEndOfApproach))
-    IdxStartOfRetract = np.argmin(np.abs(Time-TimeStartOfRetract))
+    IdxEndOfApproach = np.argmin(np.abs(Time - TimeEndOfApproach))
+    IdxStartOfRetract = np.argmin(np.abs(Time - TimeStartOfRetract))
     # note: force is 'upside down' by default, so high force (near surface
     # is actually high) is what we are looking for
     # get the different slices
-    SliceAppr = slice(0,IdxEndOfApproach)
-    SliceRetr = slice(IdxStartOfRetract,None)
+    SliceAppr = slice(0, IdxEndOfApproach)
+    SliceRetr = slice(IdxStartOfRetract, None)
+    slice_dwell = slice(IdxEndOfApproach,IdxStartOfRetract,1)
     # Make a new object with the given force and separation
     # at approach and retract
-    Appr = MakeTimeSepForceFromSlice(o,SliceAppr)
-    Retr = MakeTimeSepForceFromSlice(o,SliceRetr)
+    Appr = MakeTimeSepForceFromSlice(o, SliceAppr)
+    Retr = MakeTimeSepForceFromSlice(o, SliceRetr)
+    Dwell = MakeTimeSepForceFromSlice(o,slice_dwell)
+    return Appr,Retr,Dwell
+
+
+def GetApproachRetract(o):
+    """
+    :param o: TimeSepForce to split by meta
+    :return:  tuple of approach and retract only.
+    """
+    Appr, Retr, _ = GetApproachDwellRetract(o)
     return Appr,Retr
 
 

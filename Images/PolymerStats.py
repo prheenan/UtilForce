@@ -201,11 +201,11 @@ def contour_lengths(x,y):
     contour_lengths = np.cumsum(d_spline)
     return contour_lengths
 
-def angle_differences(x_deriv,y_deriv):
+def _raw_angle_differences(x_deriv,y_deriv):
     """
-    :param x_deriv: the x derivatives (or dx/dt) at index i, size N
-    :param y_deriv: the y derivatives (or dy/dt) as index i, size N
-    :return: ThetaMatrix (i,j), angle between between locations i and j
+    :param x_deriv: see angle_differences
+    :param y_deriv: see angle_differences
+    :return: angle differences, between -2*pi and 2*pi
     """
     deriv_unit_vector = np.array((x_deriv, y_deriv))
     deriv_unit_vector /= np.sqrt(np.sum(np.abs(deriv_unit_vector ** 2), axis=0))
@@ -216,6 +216,16 @@ def angle_differences(x_deriv,y_deriv):
     dy_deriv = deriv_unit_vector[1, :]
     angle2 = np.arctan2(dy_deriv, dx_deriv)
     angle_diff_matrix = _difference_matrix(angle2.T, angle2.T)
+    return angle_diff_matrix
+
+def angle_differences(x_deriv,y_deriv):
+    """
+    :param x_deriv: the x derivatives (or dx/dt) at index i, size N
+    :param y_deriv: the y derivatives (or dy/dt) as index i, size N
+    :return: ThetaMatrix (i,j), angle between between locations i and j
+    normalized to between 0 and 2*pi
+    """
+    angle_diff_matrix = _raw_angle_differences(x_deriv,y_deriv)
     # normalize to 0 to 2*pi
     where_le_0 = np.where(angle_diff_matrix < 0)
     angle_diff_matrix[where_le_0] += 2 * np.pi

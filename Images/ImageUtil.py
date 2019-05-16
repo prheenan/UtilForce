@@ -20,9 +20,10 @@ def fit_to_image(image,deg=1,thresh=None,**kw):
     for i in range(n_rows):
         raw_row = image_to_fit[i,:].copy()
         if thresh is not None:
-            idx_to_fit = np.where(raw_row < thresh)[0]
+            idx_to_fit = np.where( (raw_row < thresh))[0]
         else:
             idx_to_fit = np.arange(raw_row.size,dtype=np.int64)
+        assert idx_to_fit.size > 0 , "Couldn't fit to image"
         coeffs = np.polyfit(x=coords[idx_to_fit],y=raw_row[idx_to_fit],deg=deg,**kw)
         corr = np.polyval(coeffs,x=coords)
         to_ret[i,:] = corr
@@ -45,8 +46,8 @@ def subtract_background(image,**kwargs):
     subtracts a line of <deg> from each row in <images>
     """
     corr = line_background(image,**kwargs)
-    return image - corr
-
+    return image - corr    
+    
 def read_images_in_pxp_dir(dir,**kwargs):
     """
     Returns: all SurfaceImage objects from all pxps in dir
@@ -55,14 +56,21 @@ def read_images_in_pxp_dir(dir,**kwargs):
     return [image
             for pxp_file in pxps_in_dir 
             for image in PxpLoader.ReadImages(pxp_file,**kwargs)]
-    
+            
+def read_images_in_ibw_dir(dir,**kwargs):
+    """
+    Returns: all SurfaceImages objects from all ibws in dir
+    """
+    ibws_in_dir = GenUtilities.getAllFiles(dir,ext=".ibw")
+    return [PxpLoader.read_ibw_as_image(ibw_file)
+            for ibw_file in ibws_in_dir]
 
-def cache_images_in_directory(pxp_dir,cache_dir,**kwargs):
+def cache_images_in_directory(pxp_dir,cache_dir,
+                              load_func = read_images_in_pxp_dir,**kwargs):
     """
     conveniewnce wrapper. See FEC_Util.cache_individual_waves_in_directory, 
     except for images 
     """
-    load_func = read_images_in_pxp_dir
     to_ret = FEC_Util.cache_individual_waves_in_directory(pxp_dir,cache_dir,
                                                           load_func=load_func,
                                                           **kwargs)

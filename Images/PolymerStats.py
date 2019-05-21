@@ -201,11 +201,11 @@ def contour_lengths(x,y):
     contour_lengths = np.cumsum(d_spline)
     return contour_lengths
 
-def _raw_angle_differences(x_deriv,y_deriv):
+def _raw_angles(x_deriv,y_deriv):
     """
-    :param x_deriv: see angle_differences
-    :param y_deriv: see angle_differences
-    :return: angle differences, between -2*pi and 2*pi
+    :param x_deriv: see _raw_angle_differences
+    :param y_deriv: see _raw_angle_differences
+    :return: absolute angle
     """
     deriv_unit_vector = np.array((x_deriv, y_deriv))
     deriv_unit_vector /= np.sqrt(np.sum(np.abs(deriv_unit_vector ** 2), axis=0))
@@ -215,6 +215,15 @@ def _raw_angle_differences(x_deriv,y_deriv):
     dx_deriv = deriv_unit_vector[0, :]
     dy_deriv = deriv_unit_vector[1, :]
     angle2 = np.arctan2(dy_deriv, dx_deriv)
+    return angle2
+
+def _raw_angle_differences(x_deriv,y_deriv):
+    """
+    :param x_deriv: see angle_differences
+    :param y_deriv: see angle_differences
+    :return: angle differences, between -2*pi and 2*pi
+    """
+    angle2 = _raw_angles(x_deriv,y_deriv)
     angle_diff_matrix = _difference_matrix(angle2.T, angle2.T)
     return angle_diff_matrix
 

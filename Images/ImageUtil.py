@@ -4,7 +4,7 @@ from __future__ import division
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-
+import warnings
 from ..FEC import FEC_Util
 from ..UtilIgor import PxpLoader,ProcessSingleWave
 from ..UtilGeneral import GenUtilities,PlotUtilities
@@ -23,9 +23,13 @@ def fit_to_image(image,deg=1,thresh=None,**kw):
             idx_to_fit = np.where( (raw_row < thresh))[0]
         else:
             idx_to_fit = np.arange(raw_row.size,dtype=np.int64)
-        assert idx_to_fit.size > 0 , "Couldn't fit to image"
-        coeffs = np.polyfit(x=coords[idx_to_fit],y=raw_row[idx_to_fit],deg=deg,**kw)
-        corr = np.polyval(coeffs,x=coords)
+        if idx_to_fit.size == 0:
+            warnings.warn("Couldn't fit to image")
+            corr = np.zeros(np.array(coords).size)
+        else:
+            coeffs = np.polyfit(x=coords[idx_to_fit],
+                                y=raw_row[idx_to_fit],deg=deg,**kw)
+            corr = np.polyval(coeffs,x=coords)
         to_ret[i,:] = corr
     # add back in the mean, since we subtracted it
     return to_ret + mean

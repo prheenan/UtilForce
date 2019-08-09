@@ -9,6 +9,8 @@ from ..FEC import FEC_Util
 from ..UtilIgor import PxpLoader,ProcessSingleWave
 from ..UtilGeneral import GenUtilities,PlotUtilities
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+
 
 def fit_to_image(image,deg=1,thresh=None,**kw):
     to_ret = np.zeros_like(image)
@@ -82,13 +84,26 @@ def cache_images_in_directory(pxp_dir,cache_dir,
     
 def smart_colorbar(im,ax=plt.gca(),fig=plt.gcf(),size="5%",
                    colorbar_location='right',
-                   label="Height (nm)",add_space_only=False,**kw):
+                   label="Height (nm)",add_space_only=False,width=None,
+                   height=None,width_path=0.025,**kw):
     """
     Makes a color bar on the given axis/figure by moving the axis over a little 
     """    
     # make a separate axis for the colorbar 
-    divider = make_axes_locatable(ax)
-    cax = divider.append_axes(colorbar_location, size=size, pad=0.1)
+    if height is not None and width is not None:
+        # custom height/width.
+        # see:
+        # matplotlib.org/3.1.1/gallery/axes_grid1/demo_colorbar_with_inset_locator.html
+        cax = inset_axes(ax,
+                         width=width,  # width = 5% of parent_bbox width
+                         height=height,  # height : 50%
+                         loc='lower left',
+                         bbox_to_anchor=(1.0+width_path, 0., 1, 1),
+                         bbox_transform=ax.transAxes,
+                         borderpad=0)
+    else:
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes(colorbar_location, size=size, pad=0.1)
     if (not add_space_only):
         to_ret = PlotUtilities.colorbar(label,fig=fig,
                                         bar_kwargs=dict(mappable=im,cax=cax),

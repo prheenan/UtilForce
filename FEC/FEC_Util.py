@@ -13,7 +13,6 @@ from ..UtilIgor.WaveDataGroup import WaveDataGroup
 from ..UtilIgor import TimeSepForceObj
 from ..UtilGeneral.IgorUtil import SavitskyFilter
 from ..UtilGeneral import GenUtilities,CheckpointUtilities
-
 default_filter_pct = 0.01
 
 class DNAWlcPoints:
@@ -790,7 +789,11 @@ def GetRegionForWLCFit(RetractOriginal,NFilterPoints=None,
 
     
 def _safe_meta_key_val(s):
-    return str(unicode(s).replace(",",";").replace(":","/"))
+    try:
+        unicode_s = unicode(s)
+    except NameError:
+        unicode_s = str(s)
+    return str(unicode_s.replace(str(","),str(";")).replace(str(":"),str("/")))
 
 
 def _save_single_csv(out_dir,fec_to_save):

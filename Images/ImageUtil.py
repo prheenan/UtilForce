@@ -85,7 +85,9 @@ def cache_images_in_directory(pxp_dir,cache_dir,
 def smart_colorbar(im,ax=plt.gca(),fig=plt.gcf(),size="5%",
                    colorbar_location='right',
                    label="Height (nm)",add_space_only=False,width=None,
-                   height=None,width_path=0.025,**kw):
+                   height=None,width_path=0.025,inset_offset_x=1.0,
+                   inset_offset_y=0,
+                   inset_color=None,**kw):
     """
     Makes a color bar on the given axis/figure by moving the axis over a little 
     """    
@@ -98,7 +100,8 @@ def smart_colorbar(im,ax=plt.gca(),fig=plt.gcf(),size="5%",
                          width=width,  # width = 5% of parent_bbox width
                          height=height,  # height : 50%
                          loc='lower left',
-                         bbox_to_anchor=(1.0+width_path, 0., 1, 1),
+                         bbox_to_anchor=(inset_offset_x+width_path,
+                                         inset_offset_y, 1, 1),
                          bbox_transform=ax.transAxes,
                          borderpad=0)
     else:

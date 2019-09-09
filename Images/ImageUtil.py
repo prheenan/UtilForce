@@ -11,6 +11,25 @@ from ..UtilGeneral import GenUtilities,PlotUtilities
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
+def row_stats(raw_row,coords=None,deg=1,thresh=None,**kw):
+    if coords is None:
+        coords = np.arange(raw_row.size)
+    if thresh is not None:
+        idx_to_fit = np.where((np.abs(raw_row) < thresh))[0]
+    else:
+        idx_to_fit = np.arange(raw_row.size, dtype=np.int64)
+    if idx_to_fit.size == 0:
+        warnings.warn("Couldn't fit to image")
+        corr = np.zeros(np.array(coords).size)
+        x_fit = []
+        y_fit = []
+    else:
+        x_fit = coords[idx_to_fit]
+        y_fit = raw_row[idx_to_fit]
+        coeffs = np.polyfit(x=x_fit,
+                            y=y_fit, deg=deg, **kw)
+        corr = np.polyval(coeffs, x=coords)
+    return corr, coeffs, x_fit, y_fit
 
 def fit_to_image(image,deg=1,thresh=None,**kw):
     to_ret = np.zeros_like(image)
@@ -20,18 +39,8 @@ def fit_to_image(image,deg=1,thresh=None,**kw):
     mean = np.mean(image)
     image_to_fit = image - mean
     for i in range(n_rows):
-        raw_row = image_to_fit[i,:].copy()
-        if thresh is not None:
-            idx_to_fit = np.where( (raw_row < thresh))[0]
-        else:
-            idx_to_fit = np.arange(raw_row.size,dtype=np.int64)
-        if idx_to_fit.size == 0:
-            warnings.warn("Couldn't fit to image")
-            corr = np.zeros(np.array(coords).size)
-        else:
-            coeffs = np.polyfit(x=coords[idx_to_fit],
-                                y=raw_row[idx_to_fit],deg=deg,**kw)
-            corr = np.polyval(coeffs,x=coords)
+        corr, _, _,_  = row_stats(image_to_fit[i,:],
+                                  coords,deg=deg,thresh=thresh,**kw)
         to_ret[i,:] = corr
     # add back in the mean, since we subtracted it
     return to_ret + mean

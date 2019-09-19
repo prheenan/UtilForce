@@ -183,8 +183,8 @@ def fec_name_func(i,e,max_preamble_len=40,max_name_len=30):
     if len(file_name_src) > max_preamble_len:
         preamble = preamble[:max_preamble_len//2] + "_" + \
                    preamble[-max_preamble_len//2:]
-    name = "{:s}_{:s}".format(preamble,
-                              e.Meta.Name[:max_name_len])
+    name = "{:s}_{:s}".format(str(preamble),
+                              str(e.Meta.Name[:max_name_len]))
     return name                                  
     
 def cache_individual_waves_in_directory(pxp_dir,cache_dir,limit=None,

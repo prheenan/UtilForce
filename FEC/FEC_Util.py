@@ -41,7 +41,7 @@ def default_data_root():
 	os_name = os.name
 	if (os_name == "nt"):
 		# windows
-		to_ret = "//perknas2.colorado.edu/group/"
+		to_ret = "//perknas3.colorado.edu/group/"
 	elif (os_name == "mac" or os_name == "posix"):
 		# macintosh
 		to_ret = "/Volumes/group/"

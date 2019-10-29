@@ -12,6 +12,8 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 def row_stats(raw_row,coords=None,deg=1,thresh=None,**kw):
+    mean_val = np.mean(raw_row)
+    raw_row = raw_row - mean_val
     if coords is None:
         coords = np.arange(raw_row.size)
     if thresh is not None:
@@ -21,14 +23,15 @@ def row_stats(raw_row,coords=None,deg=1,thresh=None,**kw):
     if idx_to_fit.size == 0:
         warnings.warn("Couldn't fit to image")
         corr = np.zeros(np.array(coords).size)
-        x_fit = []
-        y_fit = []
+        x_fit = coords
+        y_fit = raw_row
     else:
         x_fit = coords[idx_to_fit]
         y_fit = raw_row[idx_to_fit]
         coeffs = np.polyfit(x=x_fit,
                             y=y_fit, deg=deg, **kw)
         corr = np.polyval(coeffs, x=coords)
+    corr += mean_val
     return corr, coeffs, x_fit, y_fit
 
 def fit_to_image(image,deg=1,thresh=None,**kw):

@@ -201,14 +201,20 @@ def contour_lengths(x,y):
     contour_lengths = np.cumsum(d_spline)
     return contour_lengths
 
+def unit_normalization(x_deriv,y_deriv):
+    deriv_unit_vector = np.array((x_deriv, y_deriv))
+    to_ret = np.sqrt(np.sum(np.abs(deriv_unit_vector ** 2), axis=0))
+    return to_ret
+
 def _raw_angles(x_deriv,y_deriv):
     """
     :param x_deriv: see _raw_angle_differences
     :param y_deriv: see _raw_angle_differences
     :return: absolute angle
     """
+    norm = unit_normalization(x_deriv,y_deriv)
     deriv_unit_vector = np.array((x_deriv, y_deriv))
-    deriv_unit_vector /= np.sqrt(np.sum(np.abs(deriv_unit_vector ** 2), axis=0))
+    deriv_unit_vector /= norm
     deriv_unit_vector[np.where(np.isnan(deriv_unit_vector))] = 0
     assert ((np.sum(deriv_unit_vector ** 2, axis=0) - 1) < 1e-6).all(), \
         "Unit vectors not correct"
@@ -216,6 +222,9 @@ def _raw_angles(x_deriv,y_deriv):
     dy_deriv = deriv_unit_vector[1, :]
     angle2 = np.arctan2(dy_deriv, dx_deriv)
     return angle2
+
+def thetas(x_deriv,y_deriv):
+    return  _raw_angles(x_deriv,y_deriv)
 
 def _raw_angle_differences(x_deriv,y_deriv):
     """
@@ -227,6 +236,18 @@ def _raw_angle_differences(x_deriv,y_deriv):
     angle_diff_matrix = _difference_matrix(angle2.T, angle2.T)
     return angle_diff_matrix
 
+def normalize_angles(angle_diff_matrix):
+    """
+
+    :return: normalized angles, so everything is between 0 and 2*pi
+    """
+    # normalize to 0 to 2*pi
+    angle_diff_matrix = angle_diff_matrix.copy()
+    where_le_0 = np.where(angle_diff_matrix < 0)
+    angle_diff_matrix[where_le_0] += 2 * np.pi
+    assert ((angle_diff_matrix >= 0) & (angle_diff_matrix <= 2 * np.pi)).all()
+    return angle_diff_matrix
+
 def angle_differences(x_deriv,y_deriv):
     """
     :param x_deriv: the x derivatives (or dx/dt) at index i, size N
@@ -235,10 +256,7 @@ def angle_differences(x_deriv,y_deriv):
     normalized to between 0 and 2*pi
     """
     angle_diff_matrix = _raw_angle_differences(x_deriv,y_deriv)
-    # normalize to 0 to 2*pi
-    where_le_0 = np.where(angle_diff_matrix < 0)
-    angle_diff_matrix[where_le_0] += 2 * np.pi
-    assert ((angle_diff_matrix >= 0) & (angle_diff_matrix <= 2 * np.pi)).all()
+    angle_diff_matrix = normalize_angles(angle_diff_matrix)
     return angle_diff_matrix
 
 def _difference_matrices(spline,spline_derivative):
@@ -307,3 +325,20 @@ def _dot_matrix(v1, v2):
         matrix M, where element i,j is v1[i] . v2[j]
     """
     return np.dot(v1, v2.T)
+
+
+def L_from_xy(x,y):
+    """
+
+    :param x: x values , length N
+    :param y:  y values, length N
+    :return: contour lengths, length N
+    """
+    dx = np.array([0] + list(np.diff(x)))
+    dy = np.array([0] + list(np.diff(y)))
+    dL = np.sqrt(dx ** 2 +  dy** 2)
+    L = np.cumsum(dL)
+    return L
+
+def R_from_xy(x,y):
+    return np.sqrt( (x-x[0])**2 + (y-y[0])**2)
